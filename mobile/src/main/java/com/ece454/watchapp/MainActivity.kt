@@ -1,20 +1,88 @@
 package com.ece454.watchapp
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.util.Log
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.android.gms.wearable.*
+import java.text.SimpleDateFormat
+import java.util.*
+import org.json.JSONObject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
+
+    private lateinit var sensorDataText: TextView
+    private lateinit var lastUpdateText: TextView
+
+    private val dataClient by lazy { Wearable.getDataClient(this) }
+    private val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+
+    companion object {
+        private const val TAG = "MobileActivity"
+        private const val SENSOR_DATA_PATH = "/sensor_data"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        sensorDataText = findViewById(R.id.sensorDataText)
+        lastUpdateText = findViewById(R.id.lastUpdateText)
+    }
+
+    override fun onDataChanged(dataEvents: DataEventBuffer) {
+        dataEvents.forEach { event ->
+            if (event.type == DataEvent.TYPE_CHANGED) {
+                val uri = event.dataItem.uri
+                if (uri.path == SENSOR_DATA_PATH) {
+                    try {
+                        // Get the raw data bytes
+                        val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
+                        val rawData = dataMap.getByteArray("sensor_data")
+
+                        // Parse the JSON data
+                        val jsonData = JSONObject(String(rawData ?: ByteArray(0)))
+                        val sensorData = SensorData(
+                            heartRate = jsonData.getInt("heartRate"),
+                            steps = jsonData.getInt("steps"),
+                            temperature = jsonData.getDouble("temperature").toFloat(),
+                            timestamp = jsonData.getLong("timestamp")
+                        )
+
+                        // Update the UI
+                        updateSensorDisplay(sensorData)
+
+                        Log.d(TAG, "Received sensor data: $sensorData")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error processing sensor data", e)
+                        e.printStackTrace()
+                    }
+                }
+            }
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateSensorDisplay(data: SensorData) {
+        runOnUiThread {
+            sensorDataText.text = """
+                Heart Rate: ${data.heartRate} BPM
+                Steps: ${data.steps}
+                Temperature: %.1f°C
+            """.trimIndent().format(data.temperature)
+
+            lastUpdateText.text = "Last Updated: ${dateFormat.format(Date(data.timestamp))}"
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        dataClient.addListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        dataClient.removeListener(this)
     }
 }
