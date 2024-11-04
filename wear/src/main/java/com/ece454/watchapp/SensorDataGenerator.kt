@@ -18,7 +18,7 @@ class SensorDataGenerator(context: Context) {
             while (currentCoroutineContext().isActive) {
                 val data = SensorData(
                     heartRate = Random.nextInt(from = 60, until = 120),
-                    steps = totalSteps.also { totalSteps += Random.nextInt(from = 0, until = 10) },
+                    steps = totalSteps.also { totalSteps += Random.nextInt(from = 0, until = 2) },
                     temperature = 36.6f + Random.nextFloat() * 2.0f
                 )
 
