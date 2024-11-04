@@ -12,11 +12,11 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
-    private lateinit var sensorDataText: TextView
-    private lateinit var lastUpdateText: TextView
+    private lateinit var sensorDataText: TextView // TextView to display sensor data
+    private lateinit var lastUpdateText: TextView // TextView to display last update time
 
-    private val dataClient by lazy { Wearable.getDataClient(this) }
-    private val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    private val dataClient by lazy { Wearable.getDataClient(this) }// DataClient to receive sensor data
+    private val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())// Date format for timestamp
 
     companion object {
         private const val TAG = "MobileActivity"
