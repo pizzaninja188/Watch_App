@@ -70,4 +70,5 @@ dependencies {
     implementation("androidx.compose.runtime:runtime:1.5.3")
     //implementation("androidx.wear.widget:wear-widget:1.0.0-alpha01")
     implementation("androidx.compose.runtime:runtime:1.5.3")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

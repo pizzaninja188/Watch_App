@@ -10,6 +10,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 import org.json.JSONObject
 
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.utils.ColorTemplate
+
+
 class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
     private lateinit var sensorDataText: TextView // TextView to display sensor data
@@ -17,6 +25,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
     private val dataClient by lazy { Wearable.getDataClient(this) }// DataClient to receive sensor data
     private val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())// Date format for timestamp
+
+    private lateinit var heartRateChart: LineChart
+    private val heartRateEntries = mutableListOf<Entry>()
+    private var timeIndex = 0f
+    private val maxEntries = 50
 
     companion object {
         private const val TAG = "MobileActivity"
@@ -29,7 +42,14 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
         sensorDataText = findViewById(R.id.sensorDataText)
         lastUpdateText = findViewById(R.id.lastUpdateText)
+
+        heartRateChart = findViewById(R.id.heartRateChart)
+
+        setupChart()
+
     }
+
+
 
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         dataEvents.forEach { event ->
@@ -49,6 +69,10 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                             temperature = jsonData.getDouble("temperature").toFloat(),
                             timestamp = jsonData.getLong("timestamp")
                         )
+
+
+                        updateHeartRateData(sensorData.heartRate.toFloat())
+
 
                         // Update the UI
                         updateSensorDisplay(sensorData)
@@ -85,4 +109,54 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         super.onPause()
         dataClient.removeListener(this)
     }
+
+    private fun setupChart() {
+        // Configure the chart
+        heartRateChart.apply {
+            description.isEnabled = false
+            setTouchEnabled(true)
+            setPinchZoom(true)
+            xAxis.position = XAxis.XAxisPosition.BOTTOM
+            xAxis.setDrawGridLines(false)
+            axisRight.isEnabled = false
+            data = LineData() // Initialize with empty data to avoid null issues
+        }
+    }
+
+    private fun updateHeartRateData(newHeartRate: Float) {
+        // Check for valid heart rate data
+        if (newHeartRate <= 0) return
+
+        // Add a new entry for the heart rate
+        heartRateEntries.add(Entry(timeIndex, newHeartRate))
+        timeIndex += 1
+
+        // Ensure that heartRateEntries do not exceed maxEntries for smooth performance
+        if (heartRateEntries.size > maxEntries) {
+            heartRateEntries.removeAt(0)  // Remove the oldest entry
+            for (i in heartRateEntries.indices) {
+                heartRateEntries[i].x = i.toFloat() // Reindex entries for smooth scrolling
+            }
+        }
+
+        // Update dataset
+        val dataSet = LineDataSet(heartRateEntries, "Heart Rate").apply {
+            color = ColorTemplate.getHoloBlue()
+            setDrawValues(false)
+            lineWidth = 2f
+            setDrawCircles(false)
+            setDrawFilled(true)
+        }
+
+        // Set or update chart data
+        heartRateChart.data = LineData(dataSet)
+        heartRateChart.data.notifyDataChanged()
+        heartRateChart.notifyDataSetChanged()
+        heartRateChart.invalidate()
+
+        // Set visible range and move view for real-time effect
+        heartRateChart.setVisibleXRangeMaximum(maxEntries.toFloat())
+        heartRateChart.moveViewToX(timeIndex)
+    }
 }
+
