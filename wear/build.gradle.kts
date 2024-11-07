@@ -106,4 +106,5 @@ dependencies {
     //implementation("androidx.wear.widget:wear-widget:1.0.0-alpha01")
     implementation("androidx.compose.runtime:runtime:1.5.3")
     implementation("androidx.health:health-services-client:1.1.0-alpha04")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.0")
 }
