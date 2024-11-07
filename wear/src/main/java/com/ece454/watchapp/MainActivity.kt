@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
@@ -13,6 +14,7 @@ import android.widget.TextView
 import android.view.View
 import android.widget.Button
 import androidx.annotation.RequiresApi
+import androidx.concurrent.futures.await
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.health.services.client.HealthServices
@@ -28,6 +30,7 @@ import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.health.services.client.data.SampleDataPoint
 import androidx.health.services.client.getCapabilities
 import androidx.health.services.client.unregisterMeasureCallback
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -73,18 +76,21 @@ class MainActivity : ComponentActivity() {
         val healthClient = HealthServices.getClient(this /*context*/)
         measureClient = healthClient.measureClient
         val passiveMonitoringClient = healthClient.passiveMonitoringClient
-        var supportsHeartRate: Boolean
+        var supportsHeartRate = false
         lifecycleScope.launch {
-            val capabilities = measureClient.getCapabilities()
+            val capabilities = measureClient.getCapabilitiesAsync().await()
             // Supported types for passive data collection
             supportsHeartRate =
                 DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure
         }
 
+        Log.d("Heart rate available", supportsHeartRate.toString())
+
         heartRateCallback = object : MeasureCallback {
             override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {
                 if (availability is DataTypeAvailability) {
                     // Handle availability change.
+                    Log.d("Availability change", availability.toString())
                 }
             }
 
@@ -170,7 +176,7 @@ class MainActivity : ComponentActivity() {
         stopDataCollection()
 
         // Unregister the callback.
-        lifecycleScope.launch {
+        runBlocking {
             measureClient.unregisterMeasureCallback(DataType.Companion.HEART_RATE_BPM, heartRateCallback)
         }
     }
