@@ -8,6 +8,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
@@ -16,6 +17,7 @@ import kotlinx.coroutines.cancelAndJoin
 import android.widget.TextView
 import androidx.wear.widget.BoxInsetLayout
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,6 +34,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var mSensorManager: SensorManager
     private lateinit var mHeartRateSensor: Sensor
     private var heartRate = 0
+    private var accuracy = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +77,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     private fun startDataCollection() {
+        mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST)
         dataCollectionJob = lifecycleScope.launch {
             try {
                 sensorGenerator.generateSensorData()
@@ -98,6 +102,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     private fun stopDataCollection() {
+        mSensorManager.unregisterListener(this, mHeartRateSensor)
         lifecycleScope.launch {
             dataCollectionJob?.cancelAndJoin()
             dataCollectionJob = null
@@ -106,7 +111,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST)
         if (dataCollectionJob?.isActive != true) {
             startDataCollection()
         }
@@ -114,7 +118,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     override fun onPause() {
         super.onPause()
-        mSensorManager.unregisterListener(this)
         stopDataCollection()
     }
 
@@ -124,11 +127,16 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        heartRate = event.values[0].toInt()
-        sensorGenerator.updateHeartRate(heartRate)
+        if (event.values[0] != 0f) {
+            heartRate = event.values[0].toInt()
+            Log.d("Heart Rate updated", heartRate.toString())
+            Log.d("Accuracy", accuracy.toString())
+            sensorGenerator.updateHeartRate(heartRate)
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
+        Log.d("Accuracy changed", accuracy.toString())
+        this.accuracy = accuracy
     }
 }
