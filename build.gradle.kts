@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.android.library) apply false
 }
 
+
+
 buildscript {
     extra["kotlin_version"] = "1.9.0"
 }
