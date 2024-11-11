@@ -1,5 +1,12 @@
 package com.ece454.watchapp
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
@@ -10,8 +17,10 @@ import android.widget.TextView
 import androidx.wear.widget.BoxInsetLayout
 import android.view.View
 import android.widget.Button
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
 
     private lateinit var sensorGenerator: SensorDataGenerator
     private var dataCollectionJob: Job? = null
@@ -20,9 +29,20 @@ class MainActivity : ComponentActivity() {
     private lateinit var statusText: TextView
     private lateinit var dataText: TextView
     private lateinit var toggleButton: Button
+    private lateinit var mSensorManager: SensorManager
+    private lateinit var mHeartRateSensor: Sensor
+    private var heartRate = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // get permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BODY_SENSORS), 1)
+        }
+
+        mSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)!!
 
         // Initialize the sensor generator
         sensorGenerator = SensorDataGenerator(this)
@@ -86,6 +106,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST)
         if (dataCollectionJob?.isActive != true) {
             startDataCollection()
         }
@@ -93,11 +114,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+        mSensorManager.unregisterListener(this)
         stopDataCollection()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         stopDataCollection()
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        heartRate = event.values[0].toInt()
+        sensorGenerator.updateHeartRate(heartRate)
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
     }
 }

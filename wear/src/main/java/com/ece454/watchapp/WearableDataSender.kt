@@ -11,10 +11,10 @@ class WearableDataSender(context: Context) {
     private val dataClient: DataClient = Wearable.getDataClient(context)
 
     // Convert com.ece454.watchapp.tile.SensorData to bytes for sending
-    private fun serializeSensorData(data: SensorData): ByteArray {
+    private fun serializeSensorData(data: SensorData, heartRate: Int): ByteArray {
         return """
             {
-                "heartRate": ${data.heartRate},
+                "heartRate": ${heartRate},
                 "steps": ${data.steps},
                 "temperature": ${data.temperature},
                 "timestamp": ${data.timestamp}
@@ -23,10 +23,10 @@ class WearableDataSender(context: Context) {
     }
 
     // Send data to mobile
-    suspend fun sendToMobile(data: SensorData) {
+    suspend fun sendToMobile(data: SensorData, heartRate: Int) {
         try {
             val request = PutDataMapRequest.create("/sensor_data").apply {
-                dataMap.putByteArray("sensor_data", serializeSensorData(data))
+                dataMap.putByteArray("sensor_data", serializeSensorData(data, heartRate))
                 dataMap.putLong("timestamp", System.currentTimeMillis())
             }.asPutDataRequest()
                 .setUrgent()
