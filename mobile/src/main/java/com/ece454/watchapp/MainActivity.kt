@@ -1,8 +1,10 @@
 package com.ece454.watchapp
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.wearable.*
@@ -47,6 +49,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
         setupChart()
 
+        val personalActivityButton = findViewById<Button>(R.id.PersonalInfoButton)
+        personalActivityButton.setOnClickListener {
+            val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 

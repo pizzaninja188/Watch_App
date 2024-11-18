@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Watch App</string>
+    <string name="age">Age:</string>
+    <string name="please_select_an_option_for_all_categories">Please select an option for all categories</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="gender">Gender:</string>
+    <string name="save">Save</string>
+    <string name="enter_personal_info">Enter Personal Info</string>
+    <string name="weight">Weight:</string>
+    <string name="ageHint">Age</string>
+    <string name="weight_in_pounds">Weight (in pounds)</string>
+    <string name="please_enter_your_age">Please enter your age</string>
+    <string name="please_select_a_gender">Please select a gender</string>
+    <string name="please_enter_your_weight">Please enter your weight</string>
 </resources>
