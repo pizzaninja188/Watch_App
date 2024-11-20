@@ -23,7 +23,6 @@
         android:id="@+id/ageEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="9dp"
         android:ems="10"
         android:hint="@string/ageHint"
         android:importantForAutofill="no"
@@ -33,63 +32,134 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ageSeekBar" />
 
+    <TextView
+        android:id="@+id/ageErrorTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="34dp"
+        android:layout_marginTop="15dp"
+        android:text="@string/please_enter_your_age"
+        android:textColor="#FF0404"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/ageEditText"
+        app:layout_constraintTop_toBottomOf="@+id/ageEditText" />
+
+    <TextView
+        android:id="@+id/ageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="37dp"
+        android:text="@string/age"
+        app:layout_constraintStart_toStartOf="@+id/ageSeekBar"
+        app:layout_constraintTop_toBottomOf="@+id/genderRadioGroup" />
+
     <SeekBar
         android:id="@+id/ageSeekBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="54dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="54dp"
+        android:layout_marginStart="53dp"
+        android:layout_marginTop="9dp"
+        android:layout_marginEnd="53dp"
         android:max="99"
         android:min="16"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ageTextView" />
 
-    <TextView
-        android:id="@+id/ageTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="23dp"
-        android:text="@string/age"
-        app:layout_constraintStart_toStartOf="@+id/ageSeekBar"
-        app:layout_constraintTop_toBottomOf="@+id/genderErrorTextView" />
-
     <EditText
         android:id="@+id/weightEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginStart="1dp"
         android:ems="10"
         android:hint="@string/weight_in_pounds"
         android:importantForAutofill="no"
         android:inputType="number"
         android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="@+id/weightSeekBar"
-        app:layout_constraintStart_toStartOf="@+id/weightSeekBar"
+        app:layout_constraintStart_toEndOf="@+id/weightTextView"
         app:layout_constraintTop_toBottomOf="@+id/weightSeekBar" />
 
-    <TextView
-        android:id="@+id/weightTextView"
+    <EditText
+        android:id="@+id/heightEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="3dp"
-        android:text="@string/weight"
-        app:layout_constraintBottom_toTopOf="@+id/weightSeekBar"
-        app:layout_constraintStart_toStartOf="@+id/weightSeekBar" />
+        android:ems="10"
+        android:hint="Height"
+        android:importantForAutofill="no"
+        android:inputType="number"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/heightSeekBar" />
 
     <SeekBar
         android:id="@+id/weightSeekBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="53dp"
-        android:layout_marginTop="52dp"
-        android:layout_marginEnd="53dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="52dp"
         android:max="300"
-        android:min="80"
+        android:min="60"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weightTextView" />
+
+    <SeekBar
+        android:id="@+id/heightSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="52dp"
+        android:max="84"
+        android:min="36"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/heightTextView" />
+
+    <TextView
+        android:id="@+id/weightErrorTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/please_enter_your_weight"
+        android:textColor="#FF0404"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/weightEditText"
+        app:layout_constraintTop_toBottomOf="@+id/weightEditText" />
+
+    <TextView
+        android:id="@+id/heightErrorTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="29dp"
+        android:text="Please enter your height"
+        android:textColor="#FF0404"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="@+id/heightEditText"
+        app:layout_constraintTop_toBottomOf="@+id/heightEditText" />
+
+    <TextView
+        android:id="@+id/weightTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="@string/weight"
+        app:layout_constraintStart_toStartOf="@+id/weightSeekBar"
         app:layout_constraintTop_toBottomOf="@+id/ageErrorTextView" />
+
+    <TextView
+        android:id="@+id/heightTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="3dp"
+        android:text="Height:"
+        app:layout_constraintEnd_toStartOf="@+id/heightEditText"
+        app:layout_constraintTop_toBottomOf="@+id/weightErrorTextView" />
 
     <TextView
         android:id="@+id/genderTextView"
@@ -105,7 +175,7 @@
         android:id="@+id/genderRadioGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="2dp"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="@+id/genderTextView"
         app:layout_constraintTop_toBottomOf="@+id/genderTextView">
@@ -125,25 +195,25 @@
             android:text="@string/female" />
     </RadioGroup>
 
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="65dp"
-        android:text="@string/save"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <TextView
         android:id="@+id/errorTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="7dp"
         android:text="@string/please_select_an_option_for_all_categories"
         android:textColor="#FF0404"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/saveButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:text="@string/save"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -158,29 +228,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/genderRadioGroup" />
-
-    <TextView
-        android:id="@+id/ageErrorTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="34dp"
-        android:layout_marginTop="6dp"
-        android:text="@string/please_enter_your_age"
-        android:textColor="#FF0404"
-        android:visibility="invisible"
-        app:layout_constraintStart_toStartOf="@+id/ageEditText"
-        app:layout_constraintTop_toBottomOf="@+id/ageEditText" />
-
-    <TextView
-        android:id="@+id/weightErrorTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="26dp"
-        android:layout_marginTop="10dp"
-        android:text="@string/please_enter_your_weight"
-        android:textColor="#FF0404"
-        android:visibility="invisible"
-        app:layout_constraintStart_toStartOf="@+id/weightEditText"
-        app:layout_constraintTop_toBottomOf="@+id/weightEditText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
