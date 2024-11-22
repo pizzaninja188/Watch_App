@@ -3,8 +3,10 @@ package com.ece454.watchapp
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +20,9 @@ class PersonalInfoActivity : AppCompatActivity() {
     private var isMale = false
     private var isFemale = false
     private lateinit var genderErrorTextView: TextView
+    private lateinit var ageEditText: EditText
+    private lateinit var ageSeekBar: SeekBar
+    private lateinit var ageErrorTextView: TextView
     private lateinit var errorTextView: TextView
     private lateinit var saveButton: Button
 
@@ -31,6 +36,7 @@ class PersonalInfoActivity : AppCompatActivity() {
             insets
         }
 
+        // gender entry logic
         genderRadioGroup = findViewById<RadioGroup>(R.id.genderRadioGroup)
         maleRadioButton = findViewById<RadioButton>(R.id.maleRadioButton)
         femaleRadioButton = findViewById<RadioButton>(R.id.femaleRadioButton)
@@ -45,6 +51,32 @@ class PersonalInfoActivity : AppCompatActivity() {
         femaleRadioButton.setOnCheckedChangeListener { button, bool ->
             isFemale = femaleRadioButton.isChecked
         }
+
+        // age entry logic
+        ageEditText = findViewById<EditText>(R.id.ageEditText)
+        ageSeekBar = findViewById<SeekBar>(R.id.ageSeekBar)
+        ageErrorTextView = findViewById<TextView>(R.id.ageErrorTextView)
+
+        ageSeekBar.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                    ageEditText.setText("$progress")
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    // do nothing
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    // do nothing
+                }
+
+            }
+        )
 
         saveButton.setOnClickListener {
             if (!(isMale || isFemale)) {
