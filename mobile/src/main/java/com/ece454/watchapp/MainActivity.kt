@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wearable.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -18,6 +19,8 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.ai.client.generativeai.GenerativeModel
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
@@ -33,10 +36,18 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     private var timeIndex = 0f
     private val maxEntries = 50
 
+
+    private val generativeModel = GenerativeModel(
+        modelName = "gemini-pro",
+        apiKey = "AIzaSyAKAfd_CcsMUkPkz9aEoKakGcW2Yr32I20")
+
+
     companion object {
         private const val TAG = "MobileActivity"
         private const val SENSOR_DATA_PATH = "/sensor_data"
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +64,20 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         personalActivityButton.setOnClickListener {
             val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
             startActivity(intent)
+        }
+
+        val button = findViewById<Button>(R.id.generateButton)
+        val textView = findViewById<TextView>(R.id.responseText)
+
+        button.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    val response = generativeModel.generateContent("Give me suggestions for a man's heart rate range")
+                    textView.text = response.text
+                } catch (e: Exception) {
+                    textView.text = "Error: ${e.message}"
+                }
+            }
         }
     }
 
