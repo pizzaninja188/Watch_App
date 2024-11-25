@@ -18,6 +18,9 @@
             android:name=".PersonalInfoActivity"
             android:exported="false" />
         <activity
+            android:name=".HeartRateHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

@@ -2,11 +2,15 @@ package com.ece454.watchapp
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wearable.*
 import java.text.SimpleDateFormat
@@ -47,6 +51,23 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         private const val SENSOR_DATA_PATH = "/sensor_data"
     }
 
+    private lateinit var peakTextView: TextView
+    private lateinit var lowTextView: TextView
+
+    private var peakHeartRate: Float? = null
+    private var lowHeartRate: Float? = null
+
+    private lateinit var heartRateDisplay: TextView
+
+    private val handler = Handler(Looper.getMainLooper())
+     private val updateGraphRunnable = object : Runnable {
+      override fun run() {
+        val randomHeartRate = (100..200).random() // Generate a random integer between 100 and 200 // Generate random number [100-200]
+       updateHeartRateData(randomHeartRate.toFloat())
+      handler.postDelayed(this, 800) // Schedule next update after 1 second
+     }
+     }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,12 +78,22 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         lastUpdateText = findViewById(R.id.lastUpdateText)
 
         heartRateChart = findViewById(R.id.heartRateChart)
+        heartRateDisplay = findViewById(R.id.heartRateDisplay)
+        peakTextView = findViewById(R.id.peakTextView)
+        lowTextView = findViewById(R.id.lowTextView)
 
         setupChart()
 
         val personalActivityButton = findViewById<Button>(R.id.PersonalInfoButton)
         personalActivityButton.setOnClickListener {
             val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
+            startActivity(intent)
+        }
+
+        val historyButton: Button = findViewById(R.id.historyButton)
+        historyButton.setOnClickListener {
+            // Navigate to the Heart Rate History page
+            val intent = Intent(this, HeartRateHistoryActivity::class.java)
             startActivity(intent)
         }
 
@@ -79,6 +110,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                 }
             }
         }
+
+
     }
 
 
@@ -103,11 +136,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                         )
 
 
-                        updateHeartRateData(sensorData.heartRate.toFloat())
+                       // updateHeartRateData(sensorData.heartRate.toFloat())
 
 
                         // Update the UI
-                        updateSensorDisplay(sensorData)
+                        //updateSensorDisplay(sensorData)
 
                         Log.d(TAG, "Received sensor data: $sensorData")
                     } catch (e: Exception) {
@@ -135,33 +168,90 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     override fun onResume() {
         super.onResume()
         dataClient.addListener(this)
+        handler.post(updateGraphRunnable)
     }
 
     override fun onPause() {
         super.onPause()
         dataClient.removeListener(this)
+        handler.removeCallbacks(updateGraphRunnable)
     }
 
     private fun setupChart() {
-        // Configure the chart
         heartRateChart.apply {
-            description.isEnabled = false
+            // Chart background and interactions
+            setBackgroundColor(Color.BLACK) // Set chart background color (optional)
+            description.isEnabled = false // Remove the description label
             setTouchEnabled(true)
             setPinchZoom(true)
-            xAxis.position = XAxis.XAxisPosition.BOTTOM
-            xAxis.setDrawGridLines(false)
+
+            // Configure X-Axis
+            xAxis.apply {
+                isEnabled = false // Completely remove the X-axis, including labels and grid lines
+            }
+
+
+
+            // Configure Y-Axis (Left)
+            axisLeft.apply {
+                gridColor = Color.LTGRAY // Subtle dark grid lines
+                textColor = Color.LTGRAY // Light gray text for futuristic styling
+                setDrawAxisLine(false)
+                setDrawGridLines(true) // Keep or remove grid lines (optional)
+                granularity = 10f // Interval between grid lines
+                axisMinimum = 0f // Minimum value on the Y-axis
+                axisMaximum = 250f // Maximum value on the Y-axis
+                setDrawLabels(true) // Ensure labels are shown for the Y-axis
+            }
+
+            // Disable Right Y-Axis (Optional)
             axisRight.isEnabled = false
-            data = LineData() // Initialize with empty data to avoid null issues
+
+            // Remove the legend (Heart Rate label box)
+            legend.isEnabled = false
+
+            setTouchEnabled(true) // Enable touch gestures
+            isDragEnabled = true // Enable dragging
+            setScaleEnabled(true) // Enable scaling
+            setPinchZoom(true) // Allow pinch zoom
+
+
+
+            // Initialize chart data
+            data = LineData()
         }
+
+
+
     }
 
     private fun updateHeartRateData(newHeartRate: Float) {
         // Check for valid heart rate data
         if (newHeartRate <= 0) return
 
+        // Initialize Peak and Low values on the first reading
+        if (peakHeartRate == null || lowHeartRate == null) {
+            peakHeartRate = newHeartRate
+            lowHeartRate = newHeartRate
+        }
+
+        // Update Peak and Low values
+        if (newHeartRate > peakHeartRate!!) {
+            peakHeartRate = newHeartRate
+            peakTextView.text = "Peak: ${peakHeartRate!!.toInt()}"
+        }
+
+        if (newHeartRate < lowHeartRate!!) {
+            lowHeartRate = newHeartRate
+            lowTextView.text = "Low: ${lowHeartRate!!.toInt()}"
+        }
+
+
         // Add a new entry for the heart rate
         heartRateEntries.add(Entry(timeIndex, newHeartRate))
         timeIndex += 1
+
+
 
         // Ensure that heartRateEntries do not exceed maxEntries for smooth performance
         if (heartRateEntries.size > maxEntries) {
@@ -171,14 +261,37 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             }
         }
 
-        // Update dataset
-        val dataSet = LineDataSet(heartRateEntries, "Heart Rate").apply {
-            color = ColorTemplate.getHoloBlue()
-            setDrawValues(false)
-            lineWidth = 2f
-            setDrawCircles(false)
-            setDrawFilled(true)
+        // Update the text display above the graph
+        heartRateDisplay.text = "Heart Rate: ${newHeartRate.toInt()}"
+        if (newHeartRate in 125f..175f) {
+            heartRateDisplay.setTextColor(Color.parseColor("#39FF14")) // Neon green
+        } else {
+            heartRateDisplay.setTextColor(Color.parseColor("#FF073A")) // Neon red
         }
+
+        // Determine the line color and gradient based on the heart rate value
+        val lineColor: Int
+        val gradientDrawable: Int
+
+        if (newHeartRate in 125f..175f) {
+            lineColor = Color.parseColor("#39FF14") // Neon green
+            gradientDrawable = R.drawable.gradient_fill_green // Green gradient
+        } else {
+            lineColor = Color.parseColor("#FF073A") // Neon red
+            gradientDrawable = R.drawable.gradient_fill_red // Red gradient
+        }
+
+
+
+        val dataSet = LineDataSet(heartRateEntries, "Heart Rate").apply {
+            color = lineColor
+            setDrawCircles(false)
+            setDrawValues(false)
+            setDrawFilled(true)
+            fillDrawable = ContextCompat.getDrawable(this@MainActivity, gradientDrawable) // Set gradient
+            lineWidth = 2f // Set line thickness for visibility
+        }
+
 
         // Set or update chart data
         heartRateChart.data = LineData(dataSet)
@@ -191,4 +304,6 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         heartRateChart.moveViewToX(timeIndex)
     }
 }
+
+
 
