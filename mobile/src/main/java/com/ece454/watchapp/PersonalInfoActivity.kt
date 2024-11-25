@@ -57,7 +57,7 @@ class PersonalInfoActivity : AppCompatActivity() {
         genderErrorTextView = findViewById<TextView>(R.id.genderErrorTextView)
         errorTextView = findViewById<TextView>(R.id.errorTextView)
 
-        val sharedPref = getPreferences(MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
         if (sharedPref.contains("Gender")) {
             isMale = sharedPref.getBoolean("Gender", true)
             isFemale = !isMale
