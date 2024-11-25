@@ -263,7 +263,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
         // Update the text display above the graph
         heartRateDisplay.text = "Heart Rate: ${newHeartRate.toInt()}"
-        if (newHeartRate in 125f..175f) {
+        if (newHeartRate in 100f..175f) {
             heartRateDisplay.setTextColor(Color.parseColor("#39FF14")) // Neon green
         } else {
             heartRateDisplay.setTextColor(Color.parseColor("#FF073A")) // Neon red
@@ -273,7 +273,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         val lineColor: Int
         val gradientDrawable: Int
 
-        if (newHeartRate in 125f..175f) {
+        if (newHeartRate in 100f..175f) {
             lineColor = Color.parseColor("#39FF14") // Neon green
             gradientDrawable = R.drawable.gradient_fill_green // Green gradient
         } else {
