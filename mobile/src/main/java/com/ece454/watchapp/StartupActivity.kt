@@ -24,6 +24,7 @@ class StartupActivity : AppCompatActivity() {
             startActivity(intent)
         } else {
             val intent = Intent(this@StartupActivity, PersonalInfoActivity::class.java)
+            intent.putExtra("FirstTime", true)
             startActivity(intent)
         }
     }

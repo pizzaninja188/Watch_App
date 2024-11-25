@@ -309,6 +309,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         return when (item.itemId) {
             R.id.edit -> {
                 val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
+                intent.putExtra("FirstTime", false)
                 startActivity(intent)
                 true
             }
