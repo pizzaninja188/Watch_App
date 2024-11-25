@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
      private val updateGraphRunnable = object : Runnable {
       override fun run() {
         val randomHeartRate = (100..200).random() // Generate a random integer between 100 and 200 // Generate random number [100-200]
-       updateHeartRateData(randomHeartRate.toFloat())
+       //updateHeartRateData(randomHeartRate.toFloat())
       handler.postDelayed(this, 800) // Schedule next update after 1 second
      }
      }
@@ -136,11 +136,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                         )
 
 
-                       // updateHeartRateData(sensorData.heartRate.toFloat())
+                        updateHeartRateData(sensorData.heartRate.toFloat())
 
 
                         // Update the UI
-                        //updateSensorDisplay(sensorData)
+                        updateSensorDisplay(sensorData)
 
                         Log.d(TAG, "Received sensor data: $sensorData")
                     } catch (e: Exception) {
@@ -168,13 +168,13 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     override fun onResume() {
         super.onResume()
         dataClient.addListener(this)
-        handler.post(updateGraphRunnable)
+        //handler.post(updateGraphRunnable)
     }
 
     override fun onPause() {
         super.onPause()
         dataClient.removeListener(this)
-        handler.removeCallbacks(updateGraphRunnable)
+        //handler.removeCallbacks(updateGraphRunnable)
     }
 
     private fun setupChart() {
