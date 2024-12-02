@@ -79,12 +79,14 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val isMale = intent.getBooleanExtra("Gender", true)
+        val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
+
+        val isMale = sharedPref.getBoolean("Gender", false)
         val gender = if (isMale) "man" else "woman"
-        // Get the data from intent
-        val age = intent.getIntExtra("age", 0)
-        val weight = intent.getIntExtra("weight", 0)
-        val height = intent.getIntExtra("height", 0)
+        // Get the data from shared preferences
+        val age = sharedPref.getInt("Age", 0)
+        val weight = sharedPref.getInt("Weight", 0)
+        val height = sharedPref.getInt("Height", 0)
 
         // Now you can use these values in your prompt
         prompt = "Give me the suggestions for a person's heart rate range, whose age is data_age years old, weight is " +

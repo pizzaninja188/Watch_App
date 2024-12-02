@@ -88,7 +88,13 @@ class ChatActivity : AppCompatActivity() {
         // Generate AI response
         lifecycleScope.launch {
             try {
-                val response = generativeModel.generateContent(message)
+                val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
+                val gender = if (sharedPref.getBoolean("Gender", false)) "male" else "female"
+                val age = sharedPref.getInt("Age", 0)
+                val height = sharedPref.getInt("Height", 0)
+                val weight = sharedPref.getInt("Weight", 0)
+                val response = generativeModel.generateContent(message +
+                        ". I am a $height\" $age year old $gender that weighs $weight pounds")
                 hideLoading()
                 addBotMessage(response.text ?: "I'm sorry, I couldn't process that.")
             } catch (e: Exception) {
