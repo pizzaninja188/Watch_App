@@ -8,6 +8,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -102,12 +104,6 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         lowTextView = findViewById(R.id.lowTextView)
 
         setupChart()
-
-        val personalActivityButton = findViewById<Button>(R.id.PersonalInfoButton)
-        personalActivityButton.setOnClickListener {
-            val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
-            startActivity(intent)
-        }
 
         val historyButton: Button = findViewById(R.id.historyButton)
         historyButton.setOnClickListener {
@@ -337,6 +333,35 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         // Set visible range and move view for real-time effect
         heartRateChart.setVisibleXRangeMaximum(maxEntries.toFloat())
         heartRateChart.moveViewToX(timeIndex)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.edit -> {
+                val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
+                intent.putExtra("FirstTime", false)
+                startActivity(intent)
+                true
+            }
+
+            R.id.delete -> {
+                val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
+                val editor = sharedPref.edit()
+                editor.remove("Gender")
+                editor.remove("Age")
+                editor.remove("Weight")
+                editor.remove("Height")
+                editor.apply()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
 

@@ -1,5 +1,7 @@
 package com.ece454.watchapp
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -17,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.DialogFragment
 import java.util.Locale
 
 class PersonalInfoActivity : AppCompatActivity() {
@@ -38,6 +41,7 @@ class PersonalInfoActivity : AppCompatActivity() {
     private lateinit var heightErrorTextView: TextView
     private lateinit var errorTextView: TextView
     private lateinit var saveButton: Button
+    private lateinit var whyTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +53,17 @@ class PersonalInfoActivity : AppCompatActivity() {
             insets
         }
 
+        if (intent.getBooleanExtra("FirstTime", false)) {
+            val dialog = WelcomeDialogFragment()
+            dialog.show(supportFragmentManager, "welcomeDialog")
+        }
+
+        whyTextView = findViewById<TextView>(R.id.whyTextView)
+        whyTextView.setOnClickListener {
+            val dialog = WhyDialogFragment()
+            dialog.show(supportFragmentManager, "whyDialog")
+        }
+
         // gender entry logic
         genderRadioGroup = findViewById<RadioGroup>(R.id.genderRadioGroup)
         maleRadioButton = findViewById<RadioButton>(R.id.maleRadioButton)
@@ -57,7 +72,7 @@ class PersonalInfoActivity : AppCompatActivity() {
         genderErrorTextView = findViewById<TextView>(R.id.genderErrorTextView)
         errorTextView = findViewById<TextView>(R.id.errorTextView)
 
-        val sharedPref = getPreferences(MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
         if (sharedPref.contains("Gender")) {
             isMale = sharedPref.getBoolean("Gender", true)
             isFemale = !isMale
@@ -531,6 +546,32 @@ class PersonalInfoActivity : AppCompatActivity() {
             }
             else errorTextView.visibility = View.VISIBLE
 
+        }
+    }
+
+    class WelcomeDialogFragment : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?)
+                : Dialog {
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Welcome to HeartbeatX!")
+            builder.setMessage("HeartbeatX is a fitness tracker that uses your physical characteristics to determine your " +
+                    "optimal heart rate range during different activities using AI.")
+            builder.setPositiveButton("OK", null)
+            return builder.create()
+        }
+    }
+
+    class WhyDialogFragment : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?)
+                : Dialog {
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle("Why does HeartbeatX need this information?")
+            builder.setMessage("HeartbeatX uses your physical characteristics to determine your " +
+                    "optimal heart rate range during different activities using AI. Without your " +
+                    "personal information, HeartbeatX cannot work properly. Your personal " +
+                    "information is stored locally and only sent over the internet in AI prompts.")
+            builder.setPositiveButton("OK", null)
+            return builder.create()
         }
     }
 }
