@@ -520,10 +520,17 @@ class PersonalInfoActivity : AppCompatActivity() {
                 editor.putInt("Height", Integer.parseInt(heightFeetEditText.text.toString()) * 12 +
                         Integer.parseInt(heightInchesEditText.text.toString()))
                 editor.apply()
-                val intent = Intent(this@PersonalInfoActivity, MainActivity::class.java)
+                val intent = Intent(this@PersonalInfoActivity, MainActivity::class.java).apply {
+                    putExtra("Gender", isMale)
+                    putExtra("age", Integer.parseInt(ageEditText.text.toString()))
+                    putExtra("weight", Integer.parseInt(weightEditText.text.toString()))
+                    putExtra("height", Integer.parseInt(heightFeetEditText.text.toString()) * 12 +
+                            Integer.parseInt(heightInchesEditText.text.toString()))
+                }
                 startActivity(intent)
             }
             else errorTextView.visibility = View.VISIBLE
+
         }
     }
 }

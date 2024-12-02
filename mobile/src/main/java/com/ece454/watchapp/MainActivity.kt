@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -40,6 +41,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     private var timeIndex = 0f
     private val maxEntries = 50
 
+    private lateinit var prompt: String
+    private lateinit var replacedPrompt: String
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-pro",
@@ -74,6 +77,22 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val isMale = intent.getBooleanExtra("Gender", true)
+        val gender = if (isMale) "man" else "woman"
+        // Get the data from intent
+        val age = intent.getIntExtra("age", 0)
+        val weight = intent.getIntExtra("weight", 0)
+        val height = intent.getIntExtra("height", 0)
+
+        // Now you can use these values in your prompt
+        prompt = "Give me the suggestions for a person's heart rate range, whose age is data_age years old, weight is " +
+                "data_weight and height is data_height."
+        replacedPrompt = prompt
+            .replace("person", gender)
+            .replace("data_age", age.toString())
+            .replace("data_weight", weight.toString())
+            .replace("data_height", height.toString())
+
         sensorDataText = findViewById(R.id.sensorDataText)
         lastUpdateText = findViewById(R.id.lastUpdateText)
 
@@ -101,16 +120,32 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         val textView = findViewById<TextView>(R.id.responseText)
 
         button.setOnClickListener {
+            // Show loading text with dots animation
+            textView.text = "Analyzing..."
+
+            // Optional: Make text center aligned while loading
+            textView.gravity = Gravity.CENTER
+
             lifecycleScope.launch {
                 try {
-                    val response = generativeModel.generateContent("Give me suggestions for a man's heart rate range")
+                    val response = generativeModel.generateContent(replacedPrompt)
+                    // Reset text alignment to default
+                    textView.gravity = Gravity.START
                     textView.text = response.text
                 } catch (e: Exception) {
+                    // Reset text alignment to default
+                    textView.gravity = Gravity.START
                     textView.text = "Error: ${e.message}"
                 }
             }
         }
 
+        // Navigate to the Chat page
+        val chatButton: Button = findViewById(R.id.chatButton)
+        chatButton.setOnClickListener {
+            val intent = Intent(this, ChatActivity::class.java)
+            startActivity(intent)
+        }
 
     }
 
