@@ -32,6 +32,34 @@
             android:textColor="#888888"
             android:textSize="14sp" />
 
+        <TextView
+            android:id="@+id/currentActivityTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:fontFamily="monospace"
+            android:text="Current Activity: None"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/targetHeartRateTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:fontFamily="monospace"
+            android:text="Target Heart Rate: 0"
+            android:textColor="@android:color/holo_green_dark"
+            android:textSize="18sp" />
+
+
+        <Button
+            android:id="@+id/setActivityButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Set Activity" />
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,6 +103,7 @@
                 android:textSize="12sp"
                 android:textStyle="italic" />
         </LinearLayout>
+
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/heartRateChart"

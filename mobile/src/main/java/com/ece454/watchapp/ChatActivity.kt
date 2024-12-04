@@ -12,7 +12,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.launch
 
 class ChatActivity : AppCompatActivity() {
-    private lateinit var chatRecyclerView: RecyclerView
+        private lateinit var chatRecyclerView: RecyclerView
     private lateinit var messageInput: EditText
     private lateinit var sendButton: ImageButton
     private lateinit var loadingIndicator: View
@@ -78,7 +78,7 @@ class ChatActivity : AppCompatActivity() {
         messageInput.isEnabled = true
     }
 
-    private fun sendMessage(message: String) {
+    fun sendMessage(message: String) {
         // Add user message to chat
         addUserMessage(message)
 
@@ -115,4 +115,35 @@ class ChatActivity : AppCompatActivity() {
         chatAdapter.notifyItemInserted(chatMessages.size - 1)
         chatRecyclerView.scrollToPosition(chatMessages.size - 1)
     }
+
+    fun sendMessageWithCallback(message: String, callback: (String) -> Unit) {
+        // Add user message to chat
+        addUserMessage(message)
+
+        // Show loading indicator
+        showLoading()
+
+        // Generate AI response
+        lifecycleScope.launch {
+            try {
+                val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
+                val gender = if (sharedPref.getBoolean("Gender", false)) "male" else "female"
+                val age = sharedPref.getInt("Age", 0)
+                val height = sharedPref.getInt("Height", 0)
+                val weight = sharedPref.getInt("Weight", 0)
+                val response = generativeModel.generateContent(
+                    message + ". I am a $height\" $age year old $gender that weighs $weight pounds"
+                )
+                hideLoading()
+                val botResponse = response.text ?: "I'm sorry, I couldn't process that."
+                addBotMessage(botResponse)
+                callback(botResponse) // Pass the response to the callback
+            } catch (e: Exception) {
+                hideLoading()
+                addBotMessage("Sorry, there was an error processing your request.")
+                callback("Error")
+            }
+        }
+    }
+
 }

@@ -20,6 +20,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 import org.json.JSONObject
 
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
+import android.app.AlertDialog
+
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -73,6 +78,21 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
      }
      }
 
+    private lateinit var targetHeartRateTextView: TextView
+    private var selectedActivity: String = "Resting"
+    private lateinit var currentActivityTextView: TextView
+
+    // Register for Activity Result
+    private val activityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        if (result.resultCode == RESULT_OK) {
+            val targetHeartRate = result.data?.getStringExtra("targetHeartRate") ?: "Unknown"
+            updateTargetHeartRate(targetHeartRate)
+        }
+    }
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,6 +134,19 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             startActivity(intent)
         }
 
+        currentActivityTextView = findViewById(R.id.currentActivityTextView)
+        targetHeartRateTextView = findViewById(R.id.targetHeartRateTextView)
+
+
+        val setActivityButton: Button = findViewById(R.id.setActivityButton)
+        setActivityButton.setOnClickListener {
+            showActivityDialog()
+        }
+
+        updateCurrentActivity(selectedActivity)
+        openTargetHeartRateActivity(selectedActivity)
+
+
         val button = findViewById<Button>(R.id.generateButton)
         val textView = findViewById<TextView>(R.id.responseText)
 
@@ -144,6 +177,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             val intent = Intent(this, ChatActivity::class.java)
             startActivity(intent)
         }
+
+
 
     }
 
@@ -244,10 +279,9 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             legend.isEnabled = false
 
             setTouchEnabled(true) // Enable touch gestures
-            isDragEnabled = true // Enable dragging
-            setScaleEnabled(true) // Enable scaling
-            setPinchZoom(true) // Allow pinch zoom
-
+            isDragEnabled = true
+            setScaleEnabled(true)
+            setPinchZoom(true)
 
 
             // Initialize chart data
@@ -279,6 +313,10 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             lowTextView.text = "Low: ${lowHeartRate!!.toInt()}"
         }
 
+        // Parse the target heart rate range
+        val targetRange = parseTargetHeartRateRange()
+        val (targetLow, targetHigh) = targetRange
+
 
         // Add a new entry for the heart rate
         heartRateEntries.add(Entry(timeIndex, newHeartRate))
@@ -296,7 +334,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
         // Update the text display above the graph
         heartRateDisplay.text = "Heart Rate: ${newHeartRate.toInt()}"
-        if (newHeartRate in 100f..175f) {
+        if (newHeartRate in targetLow..targetHigh) {
             heartRateDisplay.setTextColor(Color.parseColor("#39FF14")) // Neon green
         } else {
             heartRateDisplay.setTextColor(Color.parseColor("#FF073A")) // Neon red
@@ -306,9 +344,9 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         val lineColor: Int
         val gradientDrawable: Int
 
-        if (newHeartRate in 100f..175f) {
-            lineColor = Color.parseColor("#39FF14") // Neon green
-            gradientDrawable = R.drawable.gradient_fill_green // Green gradient
+        if (newHeartRate in targetLow..targetHigh) {
+            lineColor = Color.parseColor("#39FF14")
+            gradientDrawable = R.drawable.gradient_fill_green
         } else {
             lineColor = Color.parseColor("#FF073A") // Neon red
             gradientDrawable = R.drawable.gradient_fill_red // Red gradient
@@ -335,6 +373,23 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         // Set visible range and move view for real-time effect
         heartRateChart.setVisibleXRangeMaximum(maxEntries.toFloat())
         heartRateChart.moveViewToX(timeIndex)
+    }
+
+    private fun parseTargetHeartRateRange(): Pair<Float, Float> {
+        // Get the text from targetHeartRateTextView
+        val targetHeartRateText = targetHeartRateTextView.text.toString()
+
+        // Extract the range (e.g., "Target Heart Rate: 100-175")
+        val rangeRegex = Regex("(\\d+)-(\\d+)")
+        val match = rangeRegex.find(targetHeartRateText)
+
+        return if (match != null) {
+            val (low, high) = match.destructured
+            Pair(low.toFloat(), high.toFloat())
+        } else {
+            // Default range if parsing fails
+            Pair(100f, 175f)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -365,7 +420,41 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    private fun showActivityDialog() {
+        val activities = arrayOf("Running", "Swimming", "Sleeping", "Resting")
+
+        AlertDialog.Builder(this)
+            .setTitle("Choose Activity")
+            .setItems(activities) { _, which ->
+                selectedActivity = activities[which]
+                updateCurrentActivity(selectedActivity)
+                openTargetHeartRateActivity(selectedActivity)
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+            .show()
+    }
+
+    private fun updateCurrentActivity(activity: String) {
+        currentActivityTextView.text = "Current Activity: $activity"
+    }
+
+    private fun openTargetHeartRateActivity(activity: String) {
+        val intent = Intent(this, TargetHeartRateActivity::class.java).apply {
+            putExtra("selectedActivity", activity)
+        }
+        activityResultLauncher.launch(intent)
+    }
+
+
+    private fun updateTargetHeartRate(targetHeartRate: String) {
+        targetHeartRateTextView.text = "Target Heart Rate: $targetHeartRate"
+    }
 }
+
+
+
 
 
 
