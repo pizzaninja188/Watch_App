@@ -32,6 +32,8 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.ai.client.generativeai.GenerativeModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -92,8 +94,11 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         }
     }
 
-
-
+    private lateinit var startWorkoutButton: Button
+    private lateinit var timerTextView: TextView
+    private var workoutStarted = false
+    private var timerStartMs = 0L
+    private lateinit var timerJob: Job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,8 +122,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             .replace("data_weight", weight.toString())
             .replace("data_height", height.toString())
 
-        sensorDataText = findViewById(R.id.sensorDataText)
-        lastUpdateText = findViewById(R.id.lastUpdateText)
+        //sensorDataText = findViewById(R.id.sensorDataText)
+        //lastUpdateText = findViewById(R.id.lastUpdateText)
 
         heartRateChart = findViewById(R.id.heartRateChart)
         heartRateDisplay = findViewById(R.id.heartRateDisplay)
@@ -178,11 +183,34 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             startActivity(intent)
         }
 
-
-
+        // workout tracking
+        startWorkoutButton = findViewById<Button>(R.id.startWorkoutButton)
+        timerTextView = findViewById<TextView>(R.id.timerTextView)
+        startWorkoutButton.setOnClickListener {
+            if (workoutStarted) {
+                startWorkoutButton.text = "Start Workout"
+                timerJob.cancel()
+                workoutStarted = false
+            } else {
+                startWorkoutButton.text = "Stop Workout"
+                timerStartMs = System.currentTimeMillis()
+                workoutStarted = true
+                timerJob = lifecycleScope.launch {
+                    while (workoutStarted) timerLoop()
+                }
+            }
+        }
     }
 
-
+    suspend fun timerLoop() {
+        delay(1)
+        val timerMs = System.currentTimeMillis() - timerStartMs
+        val hours = timerMs / 1000 / 60 / 60
+        val minutes = timerMs / 1000 / 60 % 60
+        val seconds = timerMs / 1000 % 60
+        val ms = timerMs % 1000
+        timerTextView.text = String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, ms)
+    }
 
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         dataEvents.forEach { event ->
