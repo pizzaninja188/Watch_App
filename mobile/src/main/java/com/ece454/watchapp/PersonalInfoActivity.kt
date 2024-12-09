@@ -2,7 +2,6 @@ package com.ece454.watchapp
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -18,7 +17,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
 import java.util.Locale
 
@@ -572,6 +570,13 @@ class PersonalInfoActivity : AppCompatActivity() {
                     "information is stored locally and only sent over the internet in AI prompts.")
             builder.setPositiveButton("OK", null)
             return builder.create()
+        }
+    }
+
+    override fun onBackPressed() {
+        val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
+        if (sharedPref.contains("Gender")) {
+            super.onBackPressed()
         }
     }
 }

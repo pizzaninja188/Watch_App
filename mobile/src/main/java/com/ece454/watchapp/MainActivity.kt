@@ -1,6 +1,7 @@
 package com.ece454.watchapp
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -12,29 +13,23 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.wearable.*
-import java.text.SimpleDateFormat
-import java.util.*
-import org.json.JSONObject
-
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-
-import android.app.AlertDialog
-
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.android.gms.wearable.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
@@ -103,24 +98,6 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
-
-        val isMale = sharedPref.getBoolean("Gender", false)
-        val gender = if (isMale) "man" else "woman"
-        // Get the data from shared preferences
-        val age = sharedPref.getInt("Age", 0)
-        val weight = sharedPref.getInt("Weight", 0)
-        val height = sharedPref.getInt("Height", 0)
-
-        // Now you can use these values in your prompt
-        prompt = "Give me the suggestions for a person's heart rate range, whose age is data_age years old, weight is " +
-                "data_weight and height is data_height."
-        replacedPrompt = prompt
-            .replace("person", gender)
-            .replace("data_age", age.toString())
-            .replace("data_weight", weight.toString())
-            .replace("data_height", height.toString())
 
         //sensorDataText = findViewById(R.id.sensorDataText)
         //lastUpdateText = findViewById(R.id.lastUpdateText)
@@ -263,6 +240,23 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
     override fun onResume() {
         super.onResume()
+        val sharedPref = getSharedPreferences("PersonalInfo", MODE_PRIVATE)
+
+        val isMale = sharedPref.getBoolean("Gender", false)
+        val gender = if (isMale) "man" else "woman"
+        // Get the data from shared preferences
+        val age = sharedPref.getInt("Age", 0)
+        val weight = sharedPref.getInt("Weight", 0)
+        val height = sharedPref.getInt("Height", 0)
+
+        // Now you can use these values in your prompt
+        prompt = "Give me the suggestions for a person's heart rate range, whose age is data_age years old, weight is " +
+                "data_weight and height is data_height."
+        replacedPrompt = prompt
+            .replace("person", gender)
+            .replace("data_age", age.toString())
+            .replace("data_weight", weight.toString())
+            .replace("data_height", height.toString())
         dataClient.addListener(this)
         //handler.post(updateGraphRunnable)
     }
@@ -442,6 +436,9 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                 editor.remove("Weight")
                 editor.remove("Height")
                 editor.apply()
+                val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
+                intent.putExtra("FirstTime", false)
+                startActivity(intent)
                 true
             }
 

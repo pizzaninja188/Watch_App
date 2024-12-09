@@ -99,8 +99,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         var heartRateText = if (missedUpdates < 5) data.heartRate else "---"
         dataText.text = """
             Heart Rate: $heartRateText bpm
-            Steps: ${data.steps}
-            Temperature: ${String.format("%.1f", data.temperature)}°C
         """.trimIndent()
     }
 
