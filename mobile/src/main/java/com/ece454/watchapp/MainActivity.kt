@@ -2,6 +2,7 @@ package com.ece454.watchapp
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -24,6 +25,8 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.android.gms.wearable.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -57,6 +60,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         private const val TAG = "MobileActivity"
         private const val SENSOR_DATA_PATH = "/sensor_data"
     }
+
 
     private lateinit var peakTextView: TextView
     private lateinit var lowTextView: TextView
@@ -95,6 +99,10 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     private var timerStartMs = 0L
     private lateinit var timerJob: Job
 
+
+    private val heartRateData = mutableListOf<Float>()
+    private var workouts = mutableListOf<Workout>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -111,8 +119,9 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
 
         val historyButton: Button = findViewById(R.id.historyButton)
         historyButton.setOnClickListener {
-            // Navigate to the Heart Rate History page
             val intent = Intent(this, HeartRateHistoryActivity::class.java)
+            intent.putParcelableArrayListExtra("workouts", ArrayList(workouts))
+            saveWorkoutsToSharedPreferences()
             startActivity(intent)
         }
 
@@ -160,14 +169,36 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
             startActivity(intent)
         }
 
-        // workout tracking
+        loadWorkoutsFromSharedPreferences()
+
         startWorkoutButton = findViewById<Button>(R.id.startWorkoutButton)
         timerTextView = findViewById<TextView>(R.id.timerTextView)
+        // workout tracking
         startWorkoutButton.setOnClickListener {
             if (workoutStarted) {
                 startWorkoutButton.text = "Start Workout"
                 timerJob.cancel()
                 workoutStarted = false
+
+                // Stop collecting heart rate data and calculate stats
+                val avgHeartRate = if (heartRateData.isNotEmpty()) heartRateData.average().toFloat() else 0f
+                val minHeartRate = heartRateData.minOrNull() ?: 0f
+                val maxHeartRate = heartRateData.maxOrNull() ?: 0f
+                val duration = timerTextView.text.toString()
+
+                // Add the workout to the list
+                workouts.add(
+                    Workout(
+                        activity = selectedActivity,
+                        avgHeartRate = avgHeartRate,
+                        minHeartRate = minHeartRate,
+                        maxHeartRate = maxHeartRate,
+                        duration = duration
+                    )
+                )
+
+                // Clear the heart rate data for the next workout
+                heartRateData.clear()
             } else {
                 startWorkoutButton.text = "Stop Workout"
                 timerStartMs = System.currentTimeMillis()
@@ -177,6 +208,7 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                 }
             }
         }
+
     }
 
     suspend fun timerLoop() {
@@ -188,6 +220,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         val ms = timerMs % 1000
         timerTextView.text = String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, ms)
     }
+
+
 
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         dataEvents.forEach { event ->
@@ -318,6 +352,10 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
         // Check for valid heart rate data
         if (newHeartRate <= 0) return
 
+        if (workoutStarted) {
+            heartRateData.add(newHeartRate)
+        }
+
         // Initialize Peak and Low values on the first reading
         if (peakHeartRate == null || lowHeartRate == null) {
             peakHeartRate = newHeartRate
@@ -436,6 +474,9 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                 editor.remove("Weight")
                 editor.remove("Height")
                 editor.apply()
+                workouts.clear()
+                val sharedPrefworkout = getSharedPreferences("WorkoutData", MODE_PRIVATE)
+                sharedPrefworkout.edit().remove("workouts").apply()
                 val intent = Intent(this@MainActivity, PersonalInfoActivity::class.java)
                 intent.putExtra("FirstTime", false)
                 startActivity(intent)
@@ -476,7 +517,32 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
     private fun updateTargetHeartRate(targetHeartRate: String) {
         targetHeartRateTextView.text = "Target Heart Rate: $targetHeartRate"
     }
+
+    private fun saveWorkoutsToSharedPreferences() {
+        val sharedPref = getSharedPreferences("WorkoutData", MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        val gson = Gson()
+        val workoutsJson = gson.toJson(workouts)
+        editor.putString("workouts", workoutsJson)
+        editor.apply()
+    }
+
+    private fun loadWorkoutsFromSharedPreferences() {
+        val sharedPref = getSharedPreferences("WorkoutData", MODE_PRIVATE)
+        val gson = Gson()
+        val workoutsJson = sharedPref.getString("workouts", null)
+        val type = object : TypeToken<MutableList<Workout>>() {}.type
+        workouts = if (workoutsJson != null) {
+            gson.fromJson(workoutsJson, type)
+        } else {
+            mutableListOf()
+        }
+    }
 }
+
+
+
+
 
 
 
