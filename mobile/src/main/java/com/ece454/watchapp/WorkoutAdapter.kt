@@ -22,7 +22,7 @@ class WorkoutAdapter(private val workouts: List<Workout>) :
     override fun onBindViewHolder(holder: WorkoutViewHolder, position: Int) {
         val workout = workouts[position]
         holder.activityText.text = "Workout ${position + 1}: ${workout.activity}"
-        holder.statsText.text = "Duration: ${workout.duration}\n" +
+        holder.statsText.text = "${workout.dateAndTime} \nDuration: ${workout.duration}\n" +
                 "Avg HR: ${workout.avgHeartRate.toInt()} BPM\n" +
                 "Min HR: ${workout.minHeartRate.toInt()} BPM\n" +
                 "Max HR: ${workout.maxHeartRate.toInt()} BPM"

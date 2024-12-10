@@ -8,13 +8,15 @@ data class Workout(
     val avgHeartRate: Float,
     val minHeartRate: Float,
     val maxHeartRate: Float,
-    val duration: String
+    val duration: String,
+    val dateAndTime: String
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readFloat(),
         parcel.readFloat(),
         parcel.readFloat(),
+        parcel.readString() ?: "",
         parcel.readString() ?: ""
     )
 
@@ -24,6 +26,7 @@ data class Workout(
         parcel.writeFloat(minHeartRate)
         parcel.writeFloat(maxHeartRate)
         parcel.writeString(duration)
+        parcel.writeString(dateAndTime)
     }
 
     override fun describeContents(): Int = 0

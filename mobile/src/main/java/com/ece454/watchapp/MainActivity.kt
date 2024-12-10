@@ -185,6 +185,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                 val minHeartRate = heartRateData.minOrNull() ?: 0f
                 val maxHeartRate = heartRateData.maxOrNull() ?: 0f
                 val duration = timerTextView.text.toString()
+                val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss")
+                val currentDate = sdf.format(Date())
 
                 // Add the workout to the list
                 workouts.add(
@@ -193,7 +195,8 @@ class MainActivity : AppCompatActivity(), DataClient.OnDataChangedListener {
                         avgHeartRate = avgHeartRate,
                         minHeartRate = minHeartRate,
                         maxHeartRate = maxHeartRate,
-                        duration = duration
+                        duration = duration,
+                        dateAndTime = currentDate
                     )
                 )
 
